@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flowty NBA Top Shot Alerts</title>
+</head>
+<body>
+  <h1>Flowty NBA Top Shot Alerts</h1>
+  <ul id="list">Caricamento...</ul>
+  <script>
+    async function fetchMoments() {
+      const query = `
+        query MarketplaceListings($input: ListingsInput, $sort: ListingsSort) {
+          listings(input: $input, sort: $sort) {
+            id
+            priceUsd
+            discountPercent
+            nft { name serialNumber permalink }
+          }
+        }
+      `;
+      const variables = {
+        input: { collectionSlugs: ["nba-top-shot"] },
+        sort: { field: "DISCOUNT", direction: "DESC" }
+      };
+      const res = await fetch("/flowty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, variables })
+      });
+      const json = await res.json();
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+      json.data.listings.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${item.nft.name}</strong> #${item.nft.serialNumber} - $${item.priceUsd} (${item.discountPercent}% off)`;
+        list.appendChild(li);
+      });
+    }
+    fetchMoments();
+  </script>
+</body>
+</html>
